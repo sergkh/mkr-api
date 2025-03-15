@@ -13,6 +13,7 @@ const url = process.env.SERVICE_URL;
 const api = new MkrApi(url);
 
 app.use(express.json());
+app.use(express.static('public'))
 
 app.get("/structures", async (req: Request, res: Response) => {  
   console.log('Requesting structures')

@@ -1,0 +1,327 @@
+openapi: 3.1.1
+info:
+  title: Schedule API
+  version: 0.1.0
+servers:
+  - url: https://mkr.sergkh.com
+    description: Production server
+tags:
+  - name: Structures
+    description: Endpoints related to structures
+  - name: Chairs
+    description: Endpoints related to chairs
+  - name: Faculties
+    description: Endpoints related to faculties
+  - name: Courses
+    description: Endpoints related to courses
+  - name: Groups
+    description: Endpoints related to groups
+  - name: Teachers
+    description: Endpoints related to teachers
+
+paths:
+  /structures:
+    get:
+      summary: Get all structures (Universities / Colleges etc.)
+      tags:
+        - Structures
+      responses:
+        '200':
+          description: A list of structures
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      description: Structure ID
+                    name:
+                      type: string
+                      description: Structure Name
+
+  /structures/{structureId}/chairs:
+    get:
+      summary: Get chairs for a structure
+      tags:
+        - Chairs
+      parameters:
+        - name: structureId
+          in: path
+          required: true
+          description: ID of the structure obtained from /structures
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A list of chairs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      description: Chair ID
+                    name:
+                      type: string
+                      description: Chair Name
+  /structures/{structureId}/faculties:
+    get:
+      summary: Get faculties for a structure
+      tags:
+        - Faculties
+      parameters:
+        - name: structureId
+          in: path
+          required: true
+          description: ID of the structure obtained from /structures
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A list of faculties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      description: Faculty ID
+                    name:
+                      type: string
+                      description: Faculty Name
+  /structures/{structureId}/faculties/{facultyId}/courses:
+    get:
+      summary: Get courses for a faculty
+      tags:
+        - Courses
+      parameters:
+        - name: structureId
+          in: path
+          required: true
+          description: ID of the structure obtained from /structures
+          schema:
+            type: integer
+        - name: facultyId
+          in: path
+          required: true
+          description: ID of the faculty obtained from /structures/{structureId}/faculties
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A list of courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      description: Course ID
+                    name:
+                      type: string
+                      description: Course Name
+  /structures/{structureId}/faculties/{facultyId}/courses/{course}/groups:
+    get:
+      summary: Get groups for a course
+      tags:
+        - Groups
+      parameters:
+        - name: structureId
+          in: path
+          required: true
+          description: ID of the structure obtained from /structures
+          schema:
+            type: integer
+        - name: facultyId
+          in: path
+          required: true
+          description: ID of the faculty obtained from /structures/{structureId}/faculties
+          schema:
+            type: integer
+        - name: course
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A list of groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      description: Group ID
+                    name:
+                      type: string
+                      description: Group Name
+  /structures/{structureId}/faculties/{facultyId}/courses/{course}/groups/{groupId}/schedule:
+    get:
+      summary: Get schedule for a group
+      tags:
+        - Groups
+      parameters:
+        - name: structureId
+          in: path
+          required: true
+          description: ID of the structure obtained from /structures
+          schema:
+            type: integer
+        - name: facultyId
+          in: path
+          required: true
+          description: ID of the faculty obtained from /structures/{structureId}/faculties
+          schema:
+            type: integer
+        - name: course
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Group schedule
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Event name
+                    place:
+                      type: string
+                      description: Place name
+                    group:
+                      type: string
+                      description: Group name
+                    teacher:
+                      type: string
+                      description: Teacher name
+                    type:
+                      type: string
+                      enum: [lection, practice, exam, lection_in_absentia, practice_in_absentia]
+                      description: Lesson type
+                    start:
+                      type: string
+                      description: Lesson start time in 'YYYY-MM-DD HH:mm' format
+                    end:
+                      type: string
+                      description: Lesson end time in 'YYYY-MM-DD HH:mm' format
+                    updated:
+                      type: string
+                      description: Recently updated
+
+  /structures/{structureId}/chairs/{chairId}/teachers:
+    get:
+      summary: Get teachers for a chair
+      tags:
+        - Teachers
+      parameters:
+        - name: structureId
+          in: path
+          required: true
+          description: ID of the structure obtained from /structures
+          schema:
+            type: integer
+        - name: chairId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A list of teachers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      description: Teacher ID
+                    name:
+                      type: string
+                      description: Teacher Name
+  /structures/{structureId}/chairs/{chairId}/teachers/{teacherId}/schedule:
+    get:
+      summary: Get schedule for a teacher
+      tags:
+        - Teachers
+      parameters:
+        - name: structureId
+          in: path
+          required: true
+          description: ID of the structure obtained from /structures
+          schema:
+            type: integer
+        - name: chairId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: teacherId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Teacher schedule
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Event name
+                    place:
+                      type: string
+                      description: Place name
+                    group:
+                      type: string
+                      description: Group name
+                    teacher:
+                      type: string
+                      description: Teacher name
+                    type:
+                      type: string
+                      enum: [lection, practice, exam, lection_in_absentia, practice_in_absentia]
+                      description: Lesson type
+                    start:
+                      type: string
+                      description: Lesson start time in 'YYYY-MM-DD HH:mm' format
+                    end:
+                      type: string
+                      description: Lesson end time in 'YYYY-MM-DD HH:mm' format
+                    updated:
+                      type: string
+                      description: Recently updated
