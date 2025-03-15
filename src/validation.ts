@@ -25,6 +25,9 @@ function validate(...rules: any): any[] {
 const parStructureId = param('structureId').isInt()
 const parChairId = param('chairId').isInt()
 const parTeacherId = param('teacherId').isInt()
+const parFacultyId = param('facultyId').isInt()
+const parCourse = param('course').isInt()
+const parGroupId = param('groupId').isInt()
 const qryDateRange = [
   query('startDate').isISO8601().toDate().optional(),
   query('endDate').isISO8601().toDate().optional()
@@ -35,5 +38,8 @@ export {
   parStructureId,
   parChairId,
   parTeacherId,
+  parFacultyId,
+  parGroupId,
+  parCourse,
   qryDateRange
 }
