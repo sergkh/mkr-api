@@ -199,6 +199,20 @@ paths:
           required: true
           schema:
             type: integer
+        - name: startDate
+          in: query
+          required: false
+          description: Schedule start date in ISO8601 format
+          example: "2025-04-16T10:00:00"
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          required: false
+          description: Schedule end date in ISO8601 format
+          example: "2025-04-16T10:00:00"
+          schema:
+            type: string
       responses:
         '200':
           description: Group schedule
@@ -290,6 +304,20 @@ paths:
           required: true
           schema:
             type: integer
+        - name: startDate
+          in: query
+          required: false
+          description: Schedule start date in ISO8601 format
+          example: "2025-04-16T10:00:00"
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          required: false
+          description: Schedule end date in ISO8601 format
+          example: "2025-04-16T10:00:00"
+          schema:
+            type: string            
       responses:
         '200':
           description: Teacher schedule
