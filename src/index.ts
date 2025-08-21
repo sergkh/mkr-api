@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { GroupScheduleRequest, MkrApi, TeacherScheduleRequest } from "./mkr";
 import { validate, parStructureId, parChairId, parTeacherId, parFacultyId, parCourse, parGroupId, qryDateRange, ValidatedRequest } from "./validation"
 
@@ -10,10 +10,15 @@ if (!process.env.SERVICE_URL) {
 }
 
 const url = process.env.SERVICE_URL;
-const api = new MkrApi(url);
+const api = new MkrApi(url)
 
-app.use(express.json());
+app.use(express.json())
 app.use(express.static('public'))
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error("Error: ", err.message);
+  res.status(500).json({ error: err.message });
+});
 
 app.get("/structures", async (req: Request, res: Response) => {  
   console.log('Requesting structures')
@@ -21,16 +26,62 @@ app.get("/structures", async (req: Request, res: Response) => {
   res.json(structures)
 });
 
+app.get("/structures/:structureId", async (req: Request, res: Response) => {  
+  console.log('Requesting structure with ID: ', req.params.structureId)
+  const structures = await api.loadStructures()
+  
+  const structure = structures.find(s => s.id === req.params.structureId)
+  if (!structure) {
+    return res.status(404).json({ error: "Structure not found" });
+  }
+  // HATEOAS links
+  const links = {
+    chairs: `/structures/${structure.id}/chairs`,
+    faculties: `/structures/${structure.id}/faculties`
+  };
+
+  res.json({ structures, links})
+});
+
+
 app.get("/structures/:structureId/chairs", validate(parStructureId), async (req: Request, res: Response) => {  
   console.log('Requesting chairs for: ', req.params.structureId)
   const chairs = await api.loadChairs(parseInt(req.params.structureId))
   res.json(chairs)
 });
 
+app.get("/structures/:structureId/chairs/:chairId", validate(parStructureId, parChairId), async (req: Request, res: Response) => {  
+  console.log('Requesting chair info for: ' + req.params.structureId + ' chair: ' + req.params.chairId) 
+  const chairs = await api.loadChairs(parseInt(req.params.structureId))
+  
+  const chair = chairs.find(s => s.id === req.params.structureId)
+  if (!chairs) {
+    return res.status(404).json({ error: "Chair is not found" });
+  }
+
+  res.json({ chairs, links: { teachers: `/structures/${req.params.structureId}/chairs/${req.params.chairId}/teachers` } })
+});
+
+
 app.get("/structures/:structureId/faculties", validate(parStructureId), async (req: Request, res: Response) => {  
   console.log('Requesting faculties for: ', req.params)
   const faculties = await api.loadFaculties(parseInt(req.params.structureId))
   res.json(faculties)
+});
+
+app.get("/structures/:structureId/faculties/:facultyId", validate(parStructureId, parFacultyId), async (req: Request, res: Response) => {  
+  console.log('Requesting faculty for: ' + req.params.structureId + ' faculty: ' + req.params.facultyId)
+
+  const faculties = await api.loadFaculties(parseInt(req.params.structureId))
+
+  const faculty = faculties.find(f => f.id === req.params.facultyId)
+  if (!faculty) {
+    return res.status(404).json({ error: "Faculty not found" });
+  }
+
+  res.json({faculty, links: {
+    courses: `/structures/${req.params.structureId}/faculties/${req.params.facultyId}/courses`
+  }})
 });
 
 app.get("/structures/:structureId/faculties/:facultyId/courses", validate(parStructureId,parFacultyId), async (req: Request, res: Response) => {  
@@ -39,10 +90,34 @@ app.get("/structures/:structureId/faculties/:facultyId/courses", validate(parStr
   res.json(courses)
 });
 
+app.get("/structures/:structureId/faculties/:facultyId/courses/:course", validate(parStructureId, parFacultyId, parCourse), async (req: Request, res: Response) => {  
+  console.log('Requesting courses for: ', req.params)
+  const courses = await api.loadCourses(parseInt(req.params.structureId), parseInt(req.params.facultyId))
+  const course = courses.find(c => c.id === req.params.course)
+  if (!course) {
+    return res.status(404).json({ error: "Course not found" });
+  }  
+  res.json({courses , links: {
+    groups: `/structures/${req.params.structureId}/faculties/${req.params.facultyId}/courses/${req.params.course}/groups`
+  }})
+});
+
 app.get("/structures/:structureId/faculties/:facultyId/courses/:course/groups", validate(parStructureId, parFacultyId, parCourse), async (req: Request, res: Response) => {
   console.log('Requesting groups for: ', req.params)
   const groups = await api.loadGroups(parseInt(req.params.structureId), parseInt(req.params.facultyId), parseInt(req.params.course))
   res.json(groups)
+});
+
+app.get("/structures/:structureId/faculties/:facultyId/courses/:course/groups/:groupId", validate(parStructureId, parFacultyId, parCourse, parGroupId), async (req: Request, res: Response) => {
+  console.log('Requesting groups for: ', req.params)
+  const groups = await api.loadGroups(parseInt(req.params.structureId), parseInt(req.params.facultyId), parseInt(req.params.course))
+  const group = groups.find(g => g.id === req.params.groupId)
+  if (!group) {
+    return res.status(404).json({ error: "Group not found" });
+  }
+  res.json({groups, links: {
+    schedule: `/structures/${req.params.structureId}/faculties/${req.params.facultyId}/courses/${req.params.course}/groups/${req.params.groupId}/schedule`
+  }})
 });
 
 app.get("/structures/:structureId/faculties/:facultyId/courses/:course/groups/:groupId/schedule", 
@@ -61,6 +136,16 @@ app.get("/structures/:structureId/chairs/:chairId/teachers", validate(parStructu
   res.json(teachers)
 });
 
+app.get("/structures/:structureId/chairs/:chairId/teachers/:teacherId", validate(parStructureId, parChairId, parTeacherId), async (req: Request, res: Response) => {
+  const reqData = (req as ValidatedRequest).validData
+  console.log('Requesting teachers for: ', reqData)
+  const teachers = await api.loadTeachers(reqData.structureId, reqData.chairId)
+  
+  res.json({teachers, links: {
+    schedule: `/structures/${reqData.structureId}/chairs/${reqData.chairId}/teachers/${reqData.teacherId}/schedule`
+  }})
+});
+
 app.get("/structures/:structureId/chairs/:chairId/teachers/:teacherId/schedule", 
   validate(parStructureId, parChairId, parTeacherId, qryDateRange), 
   async (req: Request, res: Response) => {  
@@ -71,6 +156,10 @@ app.get("/structures/:structureId/chairs/:chairId/teachers/:teacherId/schedule",
     const schedule = await api.loadTeacherSchedule(request)
 
     res.json(schedule)
+});
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.status(404).json({ error: "Resource not found", path: req.originalUrl });
 });
 
 
