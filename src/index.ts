@@ -40,7 +40,7 @@ app.get("/structures/:structureId", async (req: Request, res: Response) => {
     faculties: `/structures/${structure.id}/faculties`
   };
 
-  res.json({ structures, links})
+  res.json(Object.assign(structure, {links}))
 });
 
 
@@ -54,12 +54,14 @@ app.get("/structures/:structureId/chairs/:chairId", validate(parStructureId, par
   console.log('Requesting chair info for: ' + req.params.structureId + ' chair: ' + req.params.chairId) 
   const chairs = await api.loadChairs(parseInt(req.params.structureId))
   
-  const chair = chairs.find(s => s.id === req.params.structureId)
-  if (!chairs) {
+  const chair = chairs.find(s => s.id === req.params.chairId)
+  if (!chair) {
     return res.status(404).json({ error: "Chair is not found" });
   }
 
-  res.json({ chairs, links: { teachers: `/structures/${req.params.structureId}/chairs/${req.params.chairId}/teachers` } })
+  const links = { teachers: `/structures/${req.params.structureId}/chairs/${req.params.chairId}/teachers` }
+
+  res.json(Object.assign(chair, {links}))
 });
 
 
@@ -79,9 +81,11 @@ app.get("/structures/:structureId/faculties/:facultyId", validate(parStructureId
     return res.status(404).json({ error: "Faculty not found" });
   }
 
-  res.json({faculty, links: {
+  const links = {
     courses: `/structures/${req.params.structureId}/faculties/${req.params.facultyId}/courses`
-  }})
+  }
+
+  res.json(Object.assign(faculty, {links}))
 });
 
 app.get("/structures/:structureId/faculties/:facultyId/courses", validate(parStructureId,parFacultyId), async (req: Request, res: Response) => {  
@@ -94,12 +98,16 @@ app.get("/structures/:structureId/faculties/:facultyId/courses/:course", validat
   console.log('Requesting courses for: ', req.params)
   const courses = await api.loadCourses(parseInt(req.params.structureId), parseInt(req.params.facultyId))
   const course = courses.find(c => c.id === req.params.course)
+  
   if (!course) {
     return res.status(404).json({ error: "Course not found" });
-  }  
-  res.json({courses , links: {
+  }
+  
+  const links = {
     groups: `/structures/${req.params.structureId}/faculties/${req.params.facultyId}/courses/${req.params.course}/groups`
-  }})
+  }
+
+  res.json(Object.assign(course, { links }))
 });
 
 app.get("/structures/:structureId/faculties/:facultyId/courses/:course/groups", validate(parStructureId, parFacultyId, parCourse), async (req: Request, res: Response) => {
@@ -112,12 +120,16 @@ app.get("/structures/:structureId/faculties/:facultyId/courses/:course/groups/:g
   console.log('Requesting groups for: ', req.params)
   const groups = await api.loadGroups(parseInt(req.params.structureId), parseInt(req.params.facultyId), parseInt(req.params.course))
   const group = groups.find(g => g.id === req.params.groupId)
+  
   if (!group) {
     return res.status(404).json({ error: "Group not found" });
   }
-  res.json({groups, links: {
+  
+  const links = {
     schedule: `/structures/${req.params.structureId}/faculties/${req.params.facultyId}/courses/${req.params.course}/groups/${req.params.groupId}/schedule`
-  }})
+  }
+
+  res.json(Object.assign(group, { links }))  
 });
 
 app.get("/structures/:structureId/faculties/:facultyId/courses/:course/groups/:groupId/schedule", 
@@ -140,10 +152,17 @@ app.get("/structures/:structureId/chairs/:chairId/teachers/:teacherId", validate
   const reqData = (req as ValidatedRequest).validData
   console.log('Requesting teachers for: ', reqData)
   const teachers = await api.loadTeachers(reqData.structureId, reqData.chairId)
+  const teacher = teachers.find(t => t.id === reqData.teacherId)
   
-  res.json({teachers, links: {
+  if (!teacher) {
+    return res.status(404).json({ error: "Teacher not found" });
+  }
+
+  const links = {
     schedule: `/structures/${reqData.structureId}/chairs/${reqData.chairId}/teachers/${reqData.teacherId}/schedule`
-  }})
+  }
+  
+  res.json(Object.assign(teacher, {links}))
 });
 
 app.get("/structures/:structureId/chairs/:chairId/teachers/:teacherId/schedule", 
