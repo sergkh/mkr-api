@@ -171,6 +171,44 @@ paths:
                     name:
                       type: string
                       description: Group Name
+  /structures/{structureId}/faculties/{facultyId}/groups:
+    get:
+      summary: Get all faculty groups
+      tags:
+        - Groups
+      parameters:
+        - name: structureId
+          in: path
+          required: true
+          description: ID of the structure obtained from /structures
+          schema:
+            type: integer
+        - name: facultyId
+          in: path
+          required: true
+          description: ID of the faculty obtained from /structures/{structureId}/faculties
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A list of groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      description: Group ID
+                    name:
+                      type: string
+                      description: Group Name
+                    course:
+                      type: number
+                      description: Course
+
   /structures/{structureId}/faculties/{facultyId}/courses/{course}/groups/{groupId}/schedule:
     get:
       summary: Get schedule for a group

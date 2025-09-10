@@ -116,6 +116,12 @@ app.get("/structures/:structureId/faculties/:facultyId/courses/:course/groups", 
   res.json(groups)
 });
 
+app.get("/structures/:structureId/faculties/:facultyId/groups", validate(parStructureId, parFacultyId), async (req: Request, res: Response) => {
+  console.log('Requesting faculty groups for: ', req.params)
+  const groups = await api.loadFacultyGroups(parseInt(req.params.structureId), parseInt(req.params.facultyId))
+  res.json(groups)
+});
+
 app.get("/structures/:structureId/faculties/:facultyId/courses/:course/groups/:groupId", validate(parStructureId, parFacultyId, parCourse, parGroupId), async (req: Request, res: Response) => {
   console.log('Requesting groups for: ', req.params)
   const groups = await api.loadGroups(parseInt(req.params.structureId), parseInt(req.params.facultyId), parseInt(req.params.course))

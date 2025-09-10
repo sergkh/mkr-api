@@ -17,6 +17,12 @@ export type KeyValuePair = {
   name: string
 }
 
+export type Group = {
+  id: string,
+  name: string,
+  course: number
+}
+
 export type TeacherScheduleRequest = {
   structureId: number,
   chairId: number,
@@ -159,6 +165,19 @@ export class MkrApi {
       this.groups.put("" + structureId + "_" + facultyId + "_" + course, groups)
       
       return groups
+    }
+
+    async loadFacultyGroups(structureId: number, facultyId: number): Promise<Group[]> {
+      
+      const allGroups = await Promise.all([1, 2, 3, 4, 5, 6, 7].map((i) => {
+        return this.loadGroups(structureId, facultyId, i).then(groups => {
+          return groups.map(g => {
+            return { id: g.id, name: g.name, course: i } as Group
+          });
+        });
+      }));
+
+      return allGroups.flat()
     }
     
     async loadTeachers(structureId: number, chairId: number): Promise<KeyValuePair[]> {
