@@ -237,8 +237,7 @@ export class MkrApi {
       const parsedEvents = eventsRegex.exec(html)
   
       if (!parsedEvents) {
-        console.log("Empty response on data: ", html);
-        throw new Error('No events data found. Check the dates range');
+        return []
       }
   
       const eventsList = JSON.parse(parsedEvents[1])
@@ -299,8 +298,7 @@ export class MkrApi {
       const parsedEvents = eventsRegex.exec(html)
   
       if (!parsedEvents) {
-        console.log("Empty response on data: ", html);
-        throw new Error('No events data found. Check the dates range');
+        return []
       }
   
       const eventsList = JSON.parse(parsedEvents[1])
